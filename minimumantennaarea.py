@@ -24,6 +24,12 @@ Loss = 10  # dB
 
 # NESZ level goal
 NESZ = -20  # dB
+
+print('power budget assumptions:')
+print('Loss + Nfigure + efficiency: {} dB'.format(Loss))
+print('NESZ: {} dB'.format(NESZ))
+print('operating frequency: {:.2f} GHz'.format(freq / 1e9))
+print('incidence angle: {:.2f} deg'.format(eta * 180 / np.pi))
 print('Antenna length: {:.2f} m'.format(La))
 
 # %%
