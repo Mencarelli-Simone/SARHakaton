@@ -1,0 +1,9 @@
+numba==0.59.1
+numpy
+matplotlib
+pyqt5
+scipy==1.11.4
+tqdm
+vtk==9.3.0
+mayavi
+jupyter
