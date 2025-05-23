@@ -438,6 +438,33 @@ def nominal_doppler_bandwidth(antenna_length, incidence_angle, lambda_c, v_s, h=
     doppler_band = 2 * (B * v * sin(v * it / 2) / (lambda_c * np.sqrt(A - B * cos(v * it / 2))))
     return doppler_band
 
+def integration_time(antenna_length, incidence_angle, lambda_c, v_s, h=500e3, re=6371e3, c=299792458.0):
+    """
+    non squinted radar nominal doppler bandwidth (3-dB antenna Beamwidth) with some degree of approximation
+    for spherical earth
+    :param antenna_length: antenna length
+    :param incidence_angle: broadside point incidence angle radians
+    :param lambda_c: wavelength
+    :param v_s: satellite orbital speed (circular orbit)
+    :param h: optional, satellite height from ground, default 500 km
+    :param re: optional, spherical earth radius, default 6371 km
+    :param c: optional, default speed of light
+    :return:
+    """
+
+    r0 = re * (np.sqrt(cos(incidence_angle) ** 2 + 2 * h / re + h ** 2 / re ** 2) - cos(incidence_angle))
+    angle_az = 2*np.arctan(lambda_c / (2*antenna_length))
+    # we approximate the azimuth length illuminateb by the antenna as
+    d = r0 * np.tan(angle_az)
+
+    # this is corresponds to an integration time (at the incidence angle) of
+    ## using the ground point elevation angle
+    cos_theta_e = (re + r0 * cos(incidence_angle)) / (re + h)
+    ## and the closest approach range point speed on ground
+    vg = v_s / (re + h) * re * cos_theta_e
+    it = d / vg
+    return it
+
 
 def incidence_azimuth_to_doppler(incidence_angle, az, lambda_c, v_s, h=500e3, re=6371e3, c=299792458.0):
     """

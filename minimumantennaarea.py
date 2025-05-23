@@ -4,26 +4,29 @@ from design_functions import *
 from spherical_earth_geometry_radar import *
 
 # %% User input
-freq = 10e9  # 5e9
-La = 6  # antenna length
+freq = 3e9  # 5e9
+La = .5 # antenna length
 
 # incidence angle
-eta = 35 * np.pi / 180
+eta = 20 * np.pi / 180
 
 # altitude
 h = 500e3
+
+# speed
+# replace orbital_speed(h) everywhere
 
 # dutycycle
 dtc = 20 / 100
 
 # ground range resolution
-rrg = 3
+rrg = 0.5
 
 # losses, noise figure, efficiency (i.e.  power budget)
 Loss = 10  # dB
 
 # NESZ level goal
-NESZ = -20  # dB
+NESZ = -27# dB
 
 print('power budget assumptions:')
 print('Loss + Nfigure + efficiency: {} dB'.format(Loss))
@@ -32,13 +35,16 @@ print('operating frequency: {:.2f} GHz'.format(freq / 1e9))
 print('incidence angle: {:.2f} deg'.format(eta * 180 / np.pi))
 print('Antenna length: {:.2f} m'.format(La))
 
+
 # %%
 # nominal dopplere
 bd = nominal_doppler_bandwidth(La, eta, 3e8 / freq, orbital_speed(h), h=500e3)
+it = integration_time(La, eta, 3e8 / freq, orbital_speed(h), h=500e3)
 # doppler oversampling
 osd = 1.1
 PRF = bd * osd
 print('Nominal Doppler bandwidth: {:.2f} Hz'.format(bd))
+print('Integration time: {:.2f} s'.format(it))
 print('PRF: {:.2f} Hz'.format(PRF))
 # swath
 rs, _ = range_from_theta(eta * 180 / np.pi, h=h)
@@ -73,3 +79,67 @@ Pavg = rs ** 3 * 256 * pi ** 3 * Bn * sin(eta) * vg * k_boltz * Tant * 10 ** (Lo
                                                                                             G ** 2 * (
                                                                                                         3e8 / freq) ** 3 * 3e8)
 print('Required Average power: {:.2f} W'.format(Pavg))
+
+#%% latex table generation
+# Collect requirements and design outputs
+requirements = {
+    '$f_c$ (GHz)': freq / 1e9,
+    '$\\eta_0$ (deg)': eta * 180 / np.pi,
+    '$L_A$ (m)': La,
+    'h (km)': h / 1e3,
+    'Duty Cycle (\\%)': dtc * 100,
+    '$\\delta_{r_g}$ (m)': rrg,
+    'NESZ (dB)': NESZ,
+    'L + N (dB)': Loss
+}
+
+design_outputs = {
+    '$W_g$ (km)': wg / 1e3,
+    '$B_D$ (Hz)': bd,
+    'PRF (Hz)': PRF,
+    '$B_n$ (MHz)': Bn / 1e6,
+    '$\Theta_{el}$ (deg)': dang * 180 / np.pi,
+    '$W_A$ (m)': Wa,
+    'G (dB)': 10 * np.log10(G),
+    '$P_{av}$ (W)': Pavg
+}
+
+
+# Function to write results to a LaTeX table
+def write_latex_table(reqs, outputs, filename="design_results.tex"):
+    with open(filename, "w") as f:
+        f.write("\\begin{table}[h!]\n")
+        f.write("\\centering\n")
+        f.write("\\caption{Design Requirements and Outputs}\n")
+        f.write("\\begin{tabular}{|l|c|}\n")
+        f.write("\\hline\n")
+        f.write("\\textbf{Requirements} & \\textbf{Value} \\\\\n")
+        f.write("\\hline\n")
+
+        # Write requirements
+        for key, value in reqs.items():
+            if isinstance(value, float):
+                f.write(f"{key} & {value:.2f} \\\\\n")
+            else:
+                f.write(f"{key} & {value} \\\\\n")
+
+        f.write("\\hline\n")
+        f.write("\\textbf{Design Outputs} & \\textbf{Value} \\\\\n")
+        f.write("\\hline\n")
+
+        # Write design outputs
+        for key, value in outputs.items():
+            if isinstance(value, float):
+                f.write(f"{key} & {value:.2f} \\\\\n")
+            else:
+                f.write(f"{key} & {value} \\\\\n")
+
+        f.write("\\hline\n")
+        f.write("\\end{tabular}\n")
+        f.write("\\end{table}\n")
+
+
+# Call the function to generate the LaTeX table
+write_latex_table(requirements, design_outputs)
+
+print("LaTeX table written to 'design_results.tex'")
