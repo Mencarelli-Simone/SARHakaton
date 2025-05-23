@@ -5,16 +5,18 @@ from spherical_earth_geometry_radar import *
 
 # %% User input
 freq = 3e9  # 5e9
-La = .5 # antenna length
+La = 1 # antenna length
 
 # incidence angle
-eta = 20 * np.pi / 180
+eta = 40 * np.pi / 180
 
 # altitude
-h = 500e3
+h = 20e3
 
 # speed
-# replace orbital_speed(h) everywhere
+# replace vs everywhere
+# vs = orbital_speed(h)
+vs = 800 * 1000/3600
 
 # dutycycle
 dtc = 20 / 100
@@ -38,8 +40,8 @@ print('Antenna length: {:.2f} m'.format(La))
 
 # %%
 # nominal dopplere
-bd = nominal_doppler_bandwidth(La, eta, 3e8 / freq, orbital_speed(h), h=500e3)
-it = integration_time(La, eta, 3e8 / freq, orbital_speed(h), h=500e3)
+bd = nominal_doppler_bandwidth(La, eta, 3e8 / freq, vs, h=500e3)
+it = integration_time(La, eta, 3e8 / freq, vs, h=500e3)
 # doppler oversampling
 osd = 1.1
 PRF = bd * osd
@@ -70,7 +72,7 @@ print('Range bandwidth: {:.2f} MHz'.format(Bn / 1e6))
 # gain of the antenna
 G = 4 * pi * (La * Wa) / (3e8 / freq) ** 2
 print('Antenna gain: {:.2f} dB'.format(10 * np.log10(G)))
-vg = ground_speed(np.mean(rg), orbital_speed(h), h=h)
+vg = ground_speed(np.mean(rg), vs, h=h)
 # boltzmann constant
 k_boltz = 1.380649E-23  # J/K
 # antenna temperature
